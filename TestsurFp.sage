@@ -36,7 +36,7 @@ F = GF(97)
 					return Delta^-1 * R(H1) * R(H2) * R(H3)
 			else: return "Delta est nul"
 
-  G1,G2,G3 = polynomes()
+    G1,G2,G3 = polynomes()
 	h = decomposition_polynomial(G1,G2,G3)
 	f = G1*G2*G3
 	C = HyperellipticCurve(f)
