@@ -1,0 +1,833 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{amsmath, amssymb}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{fancyhdr}
+\usepackage{sagetex}  
+\usepackage[ruled,vlined,linesnumbered]{algorithm2e}
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{fillbetween}
+\usetikzlibrary{intersections, shapes.geometric}
+\geometry{margin=2.5cm}
+\newtheorem{theorem}{Théorème}[section]
+\newtheorem{corollary}{Corollaire}[theorem]
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{definition}{Définition}[section]
+\newtheorem{example}{Exemple}[section]
+\newtheorem{remark}{Remarque}[section]
+\title{Propositions de Sujets de TER / Stage M1\\
+	Courbes Algébriques et Cryptographie}
+\author{Abou GAYE}
+\date{Année Universitaire 2025-2026}
+% Style de page pour tout le document
+\pagestyle{fancy}
+\fancyhf{}
+
+% En-tête
+\fancyhead[L]{\nouppercase{\leftmark}} % Nom du chapitre/section en cours
+\fancyhead[C]{}                         % Vide au centre
+\fancyhead[R]{}                  % Numéro de page à droite
+
+% Pied de page
+\fancyfoot[L]{\textbf{GAYE. A} Université Paris 8}
+\fancyfoot[C]{\thepage}
+\fancyfoot[R]{\today}
+
+% Lignes
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0.5pt}
+
+% Pour les pages de début (table des matières, etc.)
+\fancypagestyle{plain}{
+	\fancyhf{}
+	\renewcommand{\headrulewidth}{0pt}
+	\fancyfoot[C]{\thepage}
+}
+
+\begin{document}
+	
+	\begin{titlepage}
+		\begin{center}
+			
+			% Logo Université Paris 8
+			\includegraphics[width=0.4\textwidth]{logo-8.png} % Remplace par le chemin de ton logo
+			\par
+			\vspace{0.5cm}
+			
+			{\large UFR de SCIENCES ET TECHNOLOGIE NUMÉRIQUE\par}
+			\vspace{1cm}
+			
+			% Mention du diplôme
+			{\large \textbf{Mention}: MATHÉMATIQUE ET APPLICATION\par}
+			\vspace{0.5cm}
+			
+			% Parcours / Spécialité
+			{\large \textbf{Parcours}: ARITHMÉTIQUE CODAGE ET CRYPTOLOGIE\par}
+			\vspace{1.5cm}
+			
+			% Titre du mémoire
+			\rule{\linewidth}{0.5mm}\\[0.4cm]
+			{\huge \textbf{Géométrie et Cryptographie en Genre 2
+					Étude Explicite des Isogénies de Richelot}\par}
+			\rule{\linewidth}{0.5mm}\\[1.5cm]
+		
+			
+			% Nom de l'étudiant·e
+			{\Large \textbf{Abou GAYE}}\par
+			\vspace{0.5cm}
+			
+			% Direction du mémoire
+			{\large \textbf{Mémoire dirigé par :}\par}
+			{\large Professeur Stefano MORRA}\par
+			{\large Professeur \`a l'Université Paris 8 et}\par
+			{\large Membre de l'équipe Arithmétique et Géométrie Algébrique, LAGA}\par
+			\vspace{1cm}
+			
+			% Année et jury éventuel
+		%	{\large Année universitaire 2025-2026}\par
+		%	\vspace{0.5cm}
+		%	{\large \textbf{Jury :} \\
+		%		Prénom Nom (Président·e)\\
+		%		Prénom Nom (Examinateur·trice)\\
+		%		Prénom Nom (Examinateur·trice)\par}
+		%	\vfill
+			
+			% Mention "Mémoire de Master" ou équivalent
+			{\large \textbf{Mémoire de Master 1}}\par
+			\vspace{0.3cm}
+		%	{\large Présenté et soutenu publiquement le JJ/MM/AAAA}\par
+			
+		\end{center}
+	\end{titlepage}
+	\maketitle
+	
+	\tableofcontents
+	
+	\newpage
+	\section{Sujet 1 : Géométrie et Cryptographie en Genre 2\\
+		Étude Explicite des Isogénies de Richelot}
+	
+	\subsection{Contexte et Motivation}
+	
+	La cryptographie moderne s'intéresse de plus en plus aux courbes de genre supérieur à 1,
+	notamment les courbes hyperelliptiques de genre 2. Contrairement aux courbes elliptiques,
+	la loi de groupe ne se lit pas directement sur les points de la courbe, mais sur sa Jacobienne
+	(un groupe de diviseurs de degré zéro).
+	
+	Récemment, les isogénies entre ces Jacobiennes ont été au centre de l'attention mondiale
+	suite à la cryptanalyse dévastatrice de l'algorithme post-quantique SIDH par Castryck et
+	Decru en 2022. Le cœur de cette attaque repose sur un outil géométrique très concret :
+	les isogénies de Richelot. Une isogénie de Richelot est une isogénie de degré $(2,2)$ entre
+	deux Jacobiennes de courbes de genre 2.
+	
+	L'avantage majeur de ces isogénies est qu'elles se calculent de manière purement algébrique,
+	via des manipulations de polynômes, sans nécessiter la théorie abstraite des variétés de
+	Shimura.
+	
+	\subsection{Objectifs du Stage}
+	
+	Ce projet vise à comprendre, manipuler et implémenter les formules de Richelot. Le travail
+	sera fortement axé sur l'utilisation du logiciel SageMath.
+	
+	\begin{itemize}
+		\item Comprendre l'arithmétique de la Jacobienne d'une courbe de genre 2 (représentation
+		de Mumford, algorithme de Cantor).
+		
+		\item Étudier les formules explicites reliant une courbe
+		\[
+		C : y^2 = G_1(x)G_2(x)G_3(x)
+		\]
+		à sa courbe isogène
+		\[
+		C' : y^2 = \Delta \cdot H_1(x)H_2(x)H_3(x),
+		\]
+		où les $H_i$ sont les déterminants des $G_j$.
+		
+		\item Implémenter ces formules et vérifier expérimentalement le théorème fondamental
+		affirmant que le nombre de points de la Jacobienne est invariant par isogénie sur un corps fini.
+	\end{itemize}
+	
+	\subsection{Plan de Travail Proposé}
+	
+	\paragraph{Phase 1 : Prise en main de la dimension 2 (Semaines 1--2)}
+	Étude des courbes hyperelliptiques
+	\[
+	y^2 = f(x) \quad \text{avec } \deg(f)=5 \text{ ou } 6.
+	\]
+	Utilisation de SageMath pour définir ces courbes, calculer des points sur $\mathbb{F}_p$
+	et additionner des diviseurs via l'algorithme de Cantor.
+	
+	\paragraph{Phase 2 : Les formules de Richelot (Semaines 3--5)}
+	Étude de la décomposition d'un polynôme de degré 6 en un produit de trois polynômes de degré 2.
+	Programmation en Python/SageMath d'une fonction qui, prenant en entrée $G_1, G_2, G_3$,
+	calcule les polynômes dérivés $H_1, H_2, H_3$ et renvoie l'équation de la nouvelle courbe $C'$.
+	
+	\paragraph{Phase 3 : Expérimentations et Invariants (Semaines 6--8)}
+	Générer des exemples sur de petits corps finis. Vérifier algorithmiquement que les courbes
+	$C$ et $C'$ ne sont pas isomorphes (via leurs invariants d'Igusa) mais que leurs Jacobiennes
+	ont le même nombre de points.
+	\newpage
+	\section*{Remerciements}
+	\textit{\textbf{Je tiens \`a exprimer ma sincère gratitude \`a mon directeur de mémoire le Professeur Stefano Morra, pour ses orientations bibliographiques et ses remarques pertinentes qui ont été déterminantes dans l'élaboration de ce mémoire.\\
+	Mes remerciements vont aussi \`a l'ensemble de mes amis et mentors pour leurs conseils.\\
+	Enfin, je remercie ma famille pour son soutien constant et indéfectible tout au long de mes études.}}
+	\newpage
+	\section{Introduction}
+	La cryptographie basée sur les courbes elliptiques a été pendant des décennies le centre de la cryptographie \`a clé publique, grâce \`a sa structure de groupe qui se lit sur les points et la difficulté du problème du logarithme discret \textbf{DLP}. Cependant depuis 2022, suite \`a l'algorithme post-quantique SIDH par Castryck et
+	Decru, on s'intéresse aux courbes hyperelliptique c'est \`a dire les courbes de genre supérieur \`a 1. 
+	
+	Une courbe hyperelliptique est d' équation $y^2= f(x)$ avec $deg(f) = 5\quad ou \quad 6$ en genre 2. Contrairement au courbe elliptique, la structure de groupe s'obtient sur la jacobienne de la courbe, dont les éléments sont représentés par un couple de polynômes $(u(x),v(x))$ élaboré par Mumford et  l'arithmétique dans la jacobienne est explicite grâce \`a l'algorithme de Cantor.  
+	
+	Ce mémoire a pour objectif de faire une étude explicite des isogénies de Richelot qui sont des isogénies entre jacobiennes. Elles sont construites \`a partir d'un polynôme $f$ qui se décompose en $G_1*G_2*G_3$ vers la jacobienne de la courbe définie par le produit des polynômes déterminants des $G_i$. Pour cela nous allons d'abord faire un petit rappel sur la géométrie algébrique, puis faire une étude des courbes hyperelliptiques et l'arithmétique de la jacobienne en genre 2. Ensuite faire une étude des formules de Richelot et Enfin implémenter ces formules et vérifier expérimentalement le Théorème de John Tate disant que le nombre de points est invariant par isogénie.    
+	\newpage
+	\section{Quelques bases de géométrie algébrique}
+	Dans toute cette section, on fixe $K$ un corps et $n \geq 1$ un entier.
+	
+	\subsection{Ensembles algébriques affines}
+	
+	\paragraph{Ensembles algébriques}
+	Soit $(P_i)_{i \in I}$ une collection de polynômes de $K[X_1, \dots, X_n]$.
+	Un \textbf{ensemble algébrique affine} $V$ est défini par :
+	\[
+	V = \{(x_1, \dots, x_n) \in K^n \mid \forall i \in I, P_i(x_1, \dots, x_n) = 0\}.
+	\]
+	C’est l’ensemble des zéros communs aux polynômes $P_i$.
+	
+	\paragraph{Courbes planes affines}
+	Une \textbf{courbe plane affine} sur $K$ est un ensemble algébrique défini par un seul polynôme $f \in K[X, Y]$ :
+	\[
+	C_f = \{(x, y) \in K^2 \mid f(x, y) = 0\}.
+	\]
+	
+	\paragraph{Points singuliers}
+	Un point $P = (x, y) \in C_f$ est dit \textbf{singulier} si les dérivées partielles de $f$ s’annulent en $P$ :
+	\[
+	\left(\frac{\partial f}{\partial X}(P), \frac{\partial f}{\partial Y}(P)\right) = (0, 0).
+	\]
+	
+	\begin{itemize}
+		\item Un point d’intersection de deux composantes irréductibles d’une courbe est toujours singulier.
+		\item Exemple : Pour $f = f_1 f_2$ avec $f_1(0,0) = f_2(0,0) = 0$, le point $(0,0)$ est singulier.
+	\end{itemize}
+	
+	\paragraph{Points rationnels}
+	On note $C_f(K)$ l’ensemble des \textbf{$K$-points rationnels} de $C_f$ :
+	\[
+	C_f(K) = \{(x, y) \in K^2 \mid f(x, y) = 0\}.
+	\]
+	
+	---
+	
+	\subsection{Espace projectif et courbes projectives}
+	
+	\paragraph{Espace projectif}
+	L’\textbf{espace projectif de dimension $n$} sur $K$ est l’ensemble des droites vectorielles de $K^{n+1}$ :
+	\[
+	\mathbb{P}^n = \{(x_1, \dots, x_{n+1}) \in K^{n+1} \setminus \{0\}\} / \sim,
+	\]
+	où $(x_1, \dots, x_{n+1}) \sim (y_1, \dots, y_{n+1})$ si et seulement s’il existe $\lambda \in K^*$ tel que $x_i = \lambda y_i$ pour tout $i$.
+	On note $[x_1 : \dots : x_{n+1}]$ la classe d’un vecteur non nul.
+	
+	\paragraph{Polynômes homogènes:}
+	Un polynôme $F \in K[X_1, \dots, X_{n+1}]$ est \textbf{homogène de degré $d$} si :
+	\[
+	F(\lambda X_1, \dots, \lambda X_{n+1}) = \lambda^d F(X_1, \dots, X_{n+1}) \quad \forall \lambda \in K.
+	\]
+	
+	\paragraph{Courbes projectives:}
+	Une \textbf{courbe projective plane} est définie par un polynôme homogène $F \in K[X, Y, Z]$ :
+	\[
+	C_F = \{[x : y : z] \in \mathbb{P}^2 \mid F(x, y, z) = 0\}.
+	\]
+	Un point $P = [x : y : z] \in C_F$ est un \textbf{point singulier} si :
+	\[
+	\left(\frac{\partial F}{\partial X}(P), \frac{\partial F}{\partial Y}(P), \frac{\partial F}{\partial Z}(P)\right) = (0, 0, 0).
+	\]
+	
+	\begin{itemize}
+		\item Une \textbf{cubique} est une courbe projective définie par un polynôme homogène de degré 3.
+		\item Un \textbf{point à l’infini} de $C_F$ est un point de la forme $[x : y : 0]$.
+	\end{itemize}
+	
+	\paragraph{Tangente en un point}
+	Soit $P \in C_F$ un point non singulier. La tangente à $C_F$ en $P$ est donnée par :
+	\[
+	\frac{\partial F}{\partial X}(P)(X - X_P) + \frac{\partial F}{\partial Y}(P)(Y - Y_P) + \frac{\partial F}{\partial Z}(P)(Z - Z_P) = 0.
+	\]
+	
+	---
+	
+	\subsection{Théorème de Bézout et applications}
+	
+	\paragraph{Théorème de Bézout}
+	Deux courbes projectives sans composante commune, de degrés $n$ et $p$, se coupent en exactement $np$ points (comptés avec multiplicité) sur un corps algébriquement clos.
+	\[
+		\sum_{P \in C} C_1 . C_2 = deg(C_1).deg(C_2) 
+	\]
+	\begin{itemize}
+		\item Conséquence : Une droite coupe une cubique en exactement trois points.
+	\end{itemize}
+	
+	\subsection{Passage entre affine et projectif}
+	
+	\paragraph{Recouvrement de l’espace projectif}
+	L’espace $\mathbb{P}^n$ est recouvert par les ouverts :
+	\[
+	U_i = \{[x_1 : \dots : x_{n+1}] \in \mathbb{P}^n \mid x_i \neq 0\},
+	\]
+	chaque $U_i$ étant isomorphe à $K^n$ via l’application :
+	\[
+	\Phi_i : K^n \to U_i, \quad (x_1, \dots, x_n) \mapsto [x_1 : \dots : x_{i-1} : 1 : x_i : \dots : x_n].
+	\]
+	
+	\paragraph{Homogénéisation et déshomogénéisation}
+	Soit $P(X, Y) \in K[X, Y]$ un polynôme de degré $d$. Son \textbf{homogénéisé} est :
+	\[
+	P^h(X, Y, Z) = Z^d P\left(\frac{X}{Z}, \frac{Y}{Z}\right).
+	\]
+	Inversement, le \textbf{déshomogénéisé} de $F(X, Y, Z)$ est $F(X, Y, 1)$.
+	
+	\paragraph{Clôture projective}
+	La \textbf{clôture projective} d’un ensemble algébrique affine $V \subset K^n$ est l’ensemble des points de $\mathbb{P}^n$ annulant les polynômes homogènes associés à $V$.
+	
+	\begin{itemize}
+		\item Il existe une bijection entre les courbes affines non vides et les courbes projectives non contenues dans le plan à l’infini $\{Z = 0\}$.
+	\end{itemize}
+	\newpage
+	\section{Études des courbes hyperelliptiques}
+	\[
+	y^2 + h(x)y = f(x) \quad \textbf{avec } \deg(f)=5 \textbf{ ou } 6.
+	\]
+	
+	\subsection{Définition:}
+	Soit $\mathbb{K}$ un corps de caractéristique p.
+	On appelle courbe hyperelliptique définie sur $\mathbb{K}$ une courbe lisse dont un modèle de plan affine donné par une équation de la forme:
+	\[
+		C: \quad y^2 + h(x)y - f(x) = 0
+	\]
+	o\'u
+		\begin{itemize}
+			\item  f $\in$ $\mathbb{K}[x]$ est unitaire de degré 2g + 1 ou 2g + 2, avec g un entier positif qui est le genre de la courbe.
+			\item h $\in$ $\mathbb{K}[x]$ de degré inférieur ou égale \`a g,
+			\item la lissit\'e de $C$ signifie qu'il n'existe pas de point $P = (a,b)$ $\in$ $C$ dans la cl\^oture alg\'ebrique $\overline{\mathbb{K}}$ de $\mathbb{K}$ tel que : $ 2b + h(a) = 0,\quad et \quad f'(a) - h'(a)b = 0$ 
+		\end{itemize}
+	Le point \`a l'infini sera not\'e par $P_\infty$ (ou bien parfois $O$ pour les courbes elliptique de $C$).
+	L'application : 
+	\[
+		i : C \rightarrow C, (x,y) \mapsto i(x,y) = (x, - y - h(x)) 
+	\]
+	est appelée \textbf{l'involution hyperelliptique} de $C$. \\
+	Pour la suite nous continuerons avec $h(x) = 0$, c'est \`a dire avec l'\'equation $y^2 = f(x)$ avec $\deg(f)=5\quad ou\quad 6 (i.e\quad g = 2)$.
+	L'involution hyperelliptique devient:
+	\[
+	i : C \rightarrow C, (x,y) \mapsto i(x,y) = (x, - y) 
+	\]
+	\paragraph{Exemple: }
+	Soit $p = 101,\quad alors\quad l'equation\quad y^2 = x^5 + 96x + 93 $ est une courbe hyperelliptique sur le corps $\mathbb{F}_{p}$ de genre $g = 2$.
+	\subsection{Définition}
+	Soit $ C: y^2 = f(x),\quad deg(f) = 5\quad ou\quad 6,$ une courbe hyperelliptique sur un corps fini $\mathbb{K}$, on appelle anneau des coordonnées affines de $C$, l'anneau quotient:
+	\[
+	\mathbb{K}[C]:= \frac{\mathbb{K}[x,y]}{(y^2 - f(x))}
+	\]  
+	L'ensemble $\mathbb{K}[C]$ est un anneau et il admet un corps de fractions rationnelles, not\`e $\mathbb{K}(C)$, appel\'e corps de fonctions rationnelles de $C$ sur $\mathbb{K}$. De la m\^eme mani\`ere, on définit ${K}[C]$ et ${K}(C)$ pour toute extension algébrique $K/\mathbb{K}$, en remplaçant $\mathbb{K}$ par $K$ dans la précédente définition.\\ \\
+	L'anneau des fonctions régulière $\mathbb{K}[C]$ admet comme ideal maximal not\`e $m_{p}$ 
+	\subsection{Fonction régulière}
+	Une fonction $f \in \mathbb{K}(C)$ est régulière en $P$ s' il existe $ g, h \in \mathbb{K}[C]\quad tel \quad que:\quad $ \[ f = \frac{h}{g}\quad et \quad g(P) \neq 0 \].
+	\subsection{Anneau Local}
+	Soient $C$ une courbe hyperelliptique definie sur $\mathbb{K}$ et $P$ $\in$ $C$. L'anneau local de C en P, not\`e $O_{C,P}$ est : $O_{C,P} = \{{g} \in $ $\mathbb{K}(C)$, $g \quad reguliere\quad en\quad P \}$ ou 
+	\[
+		O_{C,P} = \{ \frac{f}{g}\quad :f, g \in \mathbb{K}[C]: g(P) \neq 0 \} 
+	\]
+	Soit $C$ une courbe hyperelliptique lisse en $P$, alors $O_{C,P}$ admet comme idéal principal et maximal $m_{C,P}$ 
+	\paragraph{Proposition:}
+	L'anneau $O_{C,P}$ est un anneau de valuation discrète o\`u la valuation est donn\'ee par l'application
+	\[
+	v_P: O_{C,P} \rightarrow \mathbb{N} \cup \{\infty\}, \quad v_P(f) \mapsto max\{d \in \mathbb{N}: f \in m^d_P \}
+	\]
+	\subsection{Définition}
+	On dit qu'une fonction $f \in \mathbb{K}(C)$ est une uniformisante pour $C$ en $P$ si $v_p(f) = 1$.
+	
+	Soit une fonction $f \in \mathbb{K}(C)$, alors pour tout $P \in C$, l'entier $v_P(f)$ est appelé l'ordre de la fonction $f$ en P.
+	\begin{itemize}
+		\item Si $v_P(f) > 0$ alors on dit que $f$ admet un z\'ero en $P$
+		\item Si $v_P(f) < 0$ alors on dit que $f$ admet un p\^ole en $P$
+	\end{itemize}  
+	\paragraph{Proposition}
+	Soit $C$ une courbe hyperelliptique d\'efinie sur $\mathbb{K}$ et $f \in \overline{\mathbb{K}}(C)$. Alors $f$ admet un nombre fini de zéros et de p\^oles.
+	\subsection{Diviseurs d'une courbe}                                                                        
+	Soit $C$ une courbe hyperelliptique definie sur $\mathbb{K}$. Le groupe libre engendr\'e par des points de $Div(C)$ est appelé le groupe de diviseurs de $C$. Un diviseur $D \in Div(C)$ est une somme formelle de la forme 
+	\[
+	D = \sum_{P \in C} n_P.(P),\quad avec\quad n_P \in \mathbb{Z}\quad et\quad n_P = 0\quad pour\quad un \quad nombre\quad fini\quad de\quad P.
+	\]  
+	Soient $D = \sum n_P.(P)$ et $D' = \sum n'_P.(P)$ des éléments de $Div(C)$. La somme de $D$ et $D'$ est donn\'ee par la formule suivante :
+	\[
+	D + D' = \sum_{P \in Div(C)} (n_P + n'_P).(P)
+	\]
+	\paragraph{Support d'un diviseur}
+	On appelle support d'un diviseur $D$, l'ensemble not\'e \[Supp(D): =\{P \in C, n_P \neq 0\}
+	\] 
+	\paragraph{Degré d'un diviseur}
+	Soit un diviseur $D = \sum n_P.(P) \in Div(C)$. On appelle degr\'e d'un diviseur $D$, l'entier not\'e \[deg(D): =\sum_{P \in Div(C)} n_P
+	\] 
+	L'ensemble des diviseurs de degr\'e z\'ero forme un sous-groupe de $Div(C)$,not\'e $Div^0(C)$.
+	\begin{itemize}
+		\item Un diviseur $D = \sum_{P \in Div(C)}n_P.(P)$ est dit effectif si $n_P \geq 0$ pour tout $P$. 
+		\item On dit qu'un diviseur $D_1$ est supérieur \`a un diviseur $D_2$, et on note $D_1 \geq D_2$ si $ D_1 - D_2$ est un diviseur effectif.  
+	\end{itemize}
+	L'ensemble des diviseurs principaux est un sous groupe de $Princ(C)$ not\'e :
+	\[
+	\{ \sum_{P \in C} v_P(f)[P], \quad f \in \mathbb{K}(C)\}
+	\]
+	\paragraph{Diviseur d'une fonction}
+	Soit $f$ une fonction $\in \mathbb{K}(C)$, alors on peut définir le diviseur de $f$ not\'e $div(f)$ par :
+	\[
+	div(f) = \sum_{P \in C} v_P(f).[P]
+	\]
+	\paragraph{Groupe de Picard}
+	Soit un corps fini $\mathbb{K}$ et $C$ une courbe hyperelliptique.
+	On définit le groupe de Picard not\'e $Pic^0(C) = \frac{Div^0(C)}{Princ(C)} $ est un groupe ab\'elien.
+	\subsection{Jacobienne d'une courbe hyperelliptique}
+	Soit $C: y^2 = f(x)$ avec $deg(f) =$ 5 ou 6.
+	On construit alors la jacobienne de $C$ par le groupe des diviseurs de degr\'e $0$ modulo les diviseurs principaux. C'est \`a dire: \[J(C) = \frac{Div^0(C)}{Princ(C)} = Pic^0(C) \].
+	\subsection{Définition}
+	Soit $C$ une courbe hyperelliptique, la jacobienne de $C$ est la variété projective lisse $J_C$ qui est caractérisée (\`a isomorphisme pr\`es) par la propriété suivante: pour tout extension algébrique $K$ de $\mathbb{K}$ il existe une bijection $\phi_K : Pic_C(K) \rightarrow J_C(K)$ et les $\phi_K$ sont compatibles avec les injections naturelles $J_C(K) \rightarrow J_C(K')$ et $Pic_C(K)\rightarrow Pic_C(K')$ si $K'$ est une extension algébrique de $K$.\\  
+	Donc on aura pas besoin de considérer la structure de variété algébrique sur $J_C$ et donc on manipulera les éléments de $J_C$ comme des éléments de $Pic_C$.   
+	\subsection{Remarque}
+	Toute classe de diviseur $D \in Pic_C$ peut être représent\'ee par un diviseur semi-reduit, i.e. un diviseur de la forme
+	\[
+	\sum_{i=1}^{m} (P_i) - m(P_{\infty}),\quad avec\quad P_i \in C, \quad P_i \neq P_{\infty}\quad et \quad P_i \neq i(P_j)\quad pour\quad i \neq j.
+	\]
+	L'entier m est le poids du diviseur $D$, et $D$ est dit $reduit$ si $m \leq g$. Tout diviseur semi-réduit peut être représenter sous la forme unique d'un diviseur réduit.\\Tout diviseur réduit est semi-réduit mais l'inverse n'est pas toujours vrai. Cette transformation est possible via l'algorithme de réduction de Cantor que l'on présentera prochainement. 
+	
+	\paragraph{}
+	Maintenant on sait qu'un élément de $J(C)$ est une classe de diviseur $D$, ce qui nous reste \`a connaitre est donc comment est ce qu'on manipule les éléments de cette groupe abélien, comme par exemple la somme de deux diviseur $D_1 + D_2$. Manipuler directement des diviseurs sur une courbe hyperelliptique est délicat : un même élément du groupe peut s’écrire comme des listes différentes de points, et leur nombre varie lors des additions. Pour définir une loi de groupe stable et calculable, il faut un codage unique. C’est exactement ce qu’apporte la représentation de Mumford, en remplaçant une collection fluctuante de points par deux petits polynômes $u(x)$ et $v(x)$. Dès lors, chaque élément de la jacobienne possède une écriture normalisée, directement utilisable dans des algorithmes comme celui de Cantor. Sans cette représentation, toute implémentation informatique de la cryptographie hyperelliptique resterait impraticable.  \\
+	Pour cel\`a Mumford propose une application surjective pour tout courbe définie par: \[ Symm^g(C) \rightarrow J(C), \quad \sum_{i=1}^{g} P_i \mapsto \sum_{i=1}^{g}P_i - gP_{\infty}
+	\] qui permet pour tout tout diviseur $D = \sum_{i=1}^{g}P_i - gP_{\infty}$ on peut considérer juste les points sur l'espace affine qui vont nous servir pour la représentation de Mumford. On va mettre le lien du document de Mumford en bibliographie pour ces justificatifs (La conférence Tata II sur Thêta. D. Mumford page 30-31 ou 3.18-3.19 et page 42 ou 3.29).  
+	\subsection{Représentation de Mumford}
+	Soit $C: y^2 = f(x)$ une courbe hyperelliptique de genre 2, définie sur un corps fini $\mathbb{K}$. Soit $K$ une extension algébrique de $\mathbb{K}$, alors tout élément $D$ de $J(C)$ peut \^etre représenter de façon  unique par un couple $(u(x),v(x)) \in K^2[x]$ tel que:\\
+	\indent	$i.\quad u$ est un polyn\^ome unitaire, avec $deg(u) \geq g$,\\
+	\indent	$ii.\quad deg(v)$ < $deg(u)$, et \\
+	\indent $iii.\quad u(x)$ divise $v^2(x) - f(x)$.\\
+	Étant donné un diviseur $D = P_1 + P_2 \in J(C)$ avec $P_i =(x_i,y_i)$. On obtient la représentation de Mumford en déterminant $D= (u(x),v(x))$ avec :
+	\[
+	u(x) = x^2 - (x_1 + x_2)x + x_1x_2 \quad et \quad v(x) = \frac{y_1 - y_2}{x_1 - x_2}(x - x_1) + y_1 
+	\]
+	\subsection*{Code Sage pour la décomposition de Mumford}
+	On prend un diviseur $D$ défini par deux point $P_1 + P_2$ et maintenant on construit le polynôme $u(x)$ défini par les abscisses des points $P_i$ comme racines de $u(x)$ et donc on le construit comme un polynôme $x^2 - Sx + P$ avec $S = x_1 + x_2$ et $P = x_1x_2$. Puis on construit $v(x)$ comme un polynôme de degré inférieur \`a degr\'e $u$. Pour se faire on calcule la somme des coefficients $ \frac{y_1 - y_2}{x_1 - x_2}$ et $\frac{y_1 - y_2}{x_1 - x_2} * x_1 + y_1$. Ensuite on vérifie la condition $iii.$ que $ u(x) \quad| \quad v^2(x) - f(x) $ et enfin on retourne le couple de polynômes $(u(x),v(x))$ qui représente ce diviseur.   
+	\begin{sageblock}
+		def mumford_decomposition(P1,P2):
+				x1, y1 = P1[0], P1[1]
+				x2, y2 = P2[0], P2[1]
+				u = R([x1*x2,-(x1+x2), 1])
+				u = u.monic()
+				v = R([(y1-y2)/(x1-x2)*x1 + y1, (y1-y2)/(x1-x2)])
+				if (v^2 - f) // u == 0:
+					print("v^2 - f n'est pas multiple de u")
+				return (u, v)
+				
+		#TEST SUR DES POINTS
+		F = GF(31)
+		R.<x> = PolynomialRing(F)
+		# Courbe : y^2 = x^6 + x^2 + x + 1
+		f = x^6 + x^2 + x + 1
+		P1=(5,30)
+		P2=(1,29)
+		P3=(2,3)
+		P4=(0,30)
+		D1 = mumford_decomposition(P1,P3)
+		D2 = mumford_decomposition(P2,P4)
+		print(D1,D2)
+		#Sortie representation de mumford des deux diviseurs Di=(u(x),v(x))
+		(x² + 24x + 10, 9x + 13) (x² + 30x, 30x + 28)
+	\end{sageblock}
+	\subsection{Addition de diviseurs via l'algorithme de Cantor}
+	L'algorithme de Cantor (1987) est le premier algorithme pratique permettant
+	de calculer la loi de groupe dans la Jacobienne $J(C)$ d'une courbe hyperelliptique C :
+	$y^2 = f(x)$ de genre g sur un corps fini $\mathbb{F}_q$. Il repose entièrement sur la représentation
+	de Mumford des diviseurs par des couples de polynômes $(u, v)$, et se décompose en
+	deux phases : une phase de composition (calcul d'un représentant semi-réduit de
+	$D_1 + D_2$) et une phase de réduction (calcul du représentant canonique réduit).
+	
+	\paragraph*{}
+	Maintenant après avoir obtenu une représentation unique de tout élément de la Jacobienne on peut maintenant calculer la somme de deux éléments.
+	Considérons deux diviseurs $D_1$ et $D_2$ de $J(C)$ sur $\mathbb{K}$. D'après Mumford chaque diviseur admet une représentation unique en couple de polynômes $(u,v)$.  
+	Ainsi la somme de $D_1$ et $D_2$ se fait en utilisant la représentation de Mumford $D_i = (u_i(x),v_i(x))$ avec $i=1,2$ et $u_i(x), v_i(x) \in \mathbb{K}[x]$: et cet algorithme d'addition de Cantor ci-dessous :
+	\vspace{0.5cm}
+	
+	% Package algorithm2e avec options
+	
+	% ruled : affiche un trait en haut et en bas
+	% vlined : affiche des lignes verticales pour la structure
+	% linesnumbered : numérote les lignes	
+	\begin{algorithm}[H] 
+		\caption{Algorithme d'addition de Cantor}
+		\label{alg:cantor}
+		\KwIn{Deux diviseurs réduit $D_1=(u_1(x),v_1(x))$ et $D_2=(u_2(x),v_2(x))$ $\in J(C)$}
+		\KwOut{Un diviseur semi-r\'eduit $D_s= D_1 +D_2 \in J(C)$ }
+			
+		$\textbf{calculer}\quad d_1 \leftarrow gcd(u_1,u_2):= e_1u_1 + e_2u_2$\;
+		$\textbf{calculer}\quad d \leftarrow gcd(d_1,v_1 + v_2):=c_1d_1 +c_2(v_1+v_2)$;\\
+		$\textbf{calculer}\quad s_1 \leftarrow c_1e_1, s_2 \leftarrow c_1e_2 \quad et\quad prendre\quad s_3 \leftarrow c_2$;\\
+		$\textbf{calculer}\quad u \leftarrow \frac{u_1u_2}{d^2}\quad et \quad v \leftarrow \frac{s_1u_1v_2 + s_2u_2v_1 + s_3(v_1v_2+f)}{d}\quad mod(u) $;\\
+		\Return $Ds =(u,v)$\;
+	\end{algorithm}
+	\vspace{0.6cm}
+	\subsection*{Code Sage pour l'addition de Cantor}
+	On prend un diviseur $D_1$, $D_2$ et $f(x)$ tel que $D_i=(u_i(x),v_i(x))$ représentation de Mumford des diviseurs. On calcule $d_1$ le pgcd de $u_1$ et $u_2$ tout en récupérant les coefficients de Bezout $e_1, e_2$ tel que $d_1 = u_1e_1 + u_2e_2$. Puis on détermine $d$ le pgcd de $d_1$ et $v_1+v_2$ tout en récupérant les coefficients de Bezout $c_1,c_2$ tel que $d = d_1c_1 + (v_1 + v_2)c_2$. On calcule $s_1 = c_1 * e_1$, $s_2 = c_1 * e_2$ et $s_3 = c_2$. Enfin on retourne le diviseur semi-réduit $D_s = (u(x),v(x))$ tel que $u = \frac{(u_1*u_2)}{d^2}$ et $ v = (s_1*u_1*v_2 + s_2*u_2*v_1 + s_3(v_1*v_2 + f))\quad mod(u)$ 
+	\begin{sageblock}
+		
+		def addition_Cantor(D1,D2,f):
+			u1,v1 = D1[0],D1[1]
+			u2,v2 = D2[0],D2[1]
+			d1,e1,e2 =  u1.xgcd(u2)
+			d,c1,c2 =  d1.xgcd(v1+v2)
+			s1 = c1*e1
+			s2 = c1*e2
+			s3 = c2
+			u = (u1*u2) // pow(d,2) 
+			v = (s1*u1*v2 + s2*u2*v1 + s3(v1*v2 + f)) % u
+			return (u,v)
+			
+		# Test sur les valeurs D1 et D2 obtenus dans la representation 
+		#de Mumford
+		Ds = addition_Cantor(D1,D2,f)
+		print(Ds)
+		#Resultat 
+		#(u,v)=(x^4 + 23*x^3 + 17*x^2 + 21*x, 23*x^3 + 11*x^2 + 27*x + 28)
+	\end{sageblock}
+	Grâce a cet algorithme d'addition on obtient un diviseur semi-réduit $D_s$, maintenant pour qu'il soit un élément de la Jacobienne on doit le réduire pour obtenir un diviseur réduit grâce \`a l'algorithme de réduction de Cantor.   \\ 
+	\vspace{1cm}
+	\begin{algorithm}[H] 
+		\caption{Algorithme de réduction de Cantor}
+		\label{alg:reductioncantor}
+		\KwIn{Un diviseur semi-reduit $D_s=(u(x),v(x))$ et $deg(u) > g$}
+		\KwOut{Un diviseur r\'eduit $D=(U,V)$ }
+		
+		$\textbf{Tant que}\quad deg(u) > g, faire;$\\
+		\hspace*{1cm}$\textbf{calculer}\quad U \leftarrow (f-v^2)/u$;\\
+		\hspace*{1cm}$\textbf{calculer}\quad V \leftarrow -(v)\quad mod \quad U$\\
+		\hspace*{1cm}$\textbf{prendre}\quad u \leftarrow U \quad et\quad v \leftarrow V$;\\
+		$\textbf{Fin Tant que}$\\
+		\Return $D =(U,V)$\;
+	\end{algorithm}
+	\subsection*{Code Sage pour la réduction de Cantor}
+	On prend un diviseur $D$ et le polynôme $f$, On détermine d'abord le genre de la courbe $g$, puis les polynômes $u(x)$ et $v(x)$ du diviseur $D$, on fait une boucle tant que le degré de $u(x) > g$ oui car degré de $u(x)$ peut dépasser $g$. Ensuite on calcule les nouvelles valeurs de $u(x) = U(x)$ et $v(x) = V(x)$ tel que $U(x) = \frac{(f-v^2)}{u}$ et $V(x) = -(v)\quad mod(U)$ et Enfin on retourne les valeurs $(U(x),V(x))$ qui forme le diviseur réduit.   
+	\begin{sageblock}
+		
+		def reduction_Cantor(D, f):
+				u, v = D[0], D[1]
+				g = (f.degree() - 1) // 2
+				while u.degree() > g:
+						U = (f - v^2) // u
+						v = -(v) % U
+						u = U
+						v = V
+				return (U, V)
+		
+		#Test de reduction sur Ds obtenu avec l'addition de Cantor
+		Dr = reduction_Cantor(Ds, f)
+		print(Dr)
+		#Resultat 
+		#(u,v) = (30x² + 13x + 29, 19x + 3)
+	\end{sageblock}
+	\vspace{1cm}
+	\newpage
+	\section{Les formules de Richelot}
+	\subsection{Isogénies de Richelot}
+	Une isogénie de Richelot est une isogénie polarisée de type $(2,2)$ entre les jacobiennes de courbes de genre $2$. En particulier, c'est une isogénie $\phi : J \to J'$ telle que $J[\phi] \cong \mathbb{Z}/2\mathbb{Z} \times \mathbb{Z}/2\mathbb{Z}$ et $J$, $J'$ sont des jacobiennes de courbes de genre $2$. \\
+	$J[\phi]$ est le noyau de $\phi$, c'est \`a dire l'ensemble des éléments de $J$ qui tombe sur l'élément neutre de $J'$.
+	
+	\subsection{Proposition:}
+		Supposons que la courbe $C$ soit de la forme
+		\begin{equation}
+			C : y^2 = f(x) = G_1(x)G_2(x)G_3(x),
+		\end{equation}
+		où $G_j(x) = g_{j2}x^2 + g_{j1}x + g_{j0}$, avec $g_{ji} \in K$. Soit $\Delta = \det(g_{ji})_{(1\leq i,j\leq 3)}$, que nous supposons non nul. Alors il existe une isogénie de Richelot $\phi$ de $J$, la jacobienne de $C$, vers $J'$, la jacobienne de la courbe de genre $2$ suivante :
+		\begin{equation}
+			C' :  y^2 = \Delta^{-1}.\quad H_1(x)H_2(x)H_3(x),
+		\end{equation}
+		\[\Delta = \det
+		\begin{pmatrix}
+			g_{1,0} & g_{1,1} & g_{1,2} \\
+			g_{2,0} & g_{2,1} & g_{2,2} \\
+			g_{3,0} & g_{3,1} & g_{3,2}
+		\end{pmatrix}\]
+		\\
+		où chaque $H_i(x) = G_j'(x)G_k(x) - G_j(x)G_k'(x)$, pour $[i,j,k] = [1,2,3],\ [2,3,1],\ [3,1,2]$.
+		
+	\subsection{Remarque}
+	On exclu le cas $\Delta = 0$, en effet lorsque $\Delta$ est nul alors il existe une isogénie entre la jacobienne de $C$ et le produit de deux courbes elliptiques. (voir \url{https://jtnb.centre-mersenne.org/item/10.5802/jtnb.1259.pdf} page 661-662 ou celui de Benjamin SMITH  \quad \url{https://www.i2m.univ-amu.fr/perso/david.kohel/phd/thesis_smith.pdf} page 118 pour plus de détails).\\
+	
+	Maintenant nous allons proposer un algorithme de décomposition d'un polynôme de degré 6 en un produit de polynômes de degré 2. \\\\
+	\begin{algorithm}[H] 
+		\caption{Decomposition via les formules de Richelot}
+		\label{alg:decompostion_richelot}
+		\KwIn{Une courbe $C : y^2 =G_1(x)G_2(x)G_3(x)$ où $G_j(x) = g_{j2}x^2 + g_{j1}x + g_{j0}$ }
+		\KwOut{Une courbe $C'$}
+		
+		$\textbf{calculer}\quad \Delta = \det(g_{ji})_{(0\leq i\leq 2 , 1\leq j\leq 3)}$\\
+		$\textbf{Si $\Delta \neq 0$}$\\
+		\hspace*{1cm}$\textbf{Pour i allant de 1 \`a 3}$\\
+		\hspace*{2cm}$\textbf{Prendre} \quad [j,k] = [2,3],\ [3,1],\ [1,2]$\\
+		\hspace*{2cm}$\textbf{Calculer} \quad H_i(x) = G'_{j}(x)G_{k}(x) - G'_{k}(x)G_{j}(x)$\\
+		\hspace*{1cm}$\textbf{Calculer} \quad H(x) = H_1(x)H_2(x)H_3(x)$\\
+		\hspace*{1cm}\Return $C': y^2 = \Delta^{-1} . H(x) $\\
+		$\textbf{Sinon}$\\
+		\hspace*{1cm}\Return $\textbf{"$\Delta$ est nul"}$
+		
+	\end{algorithm}
+	\subsection{Exemple}
+	Soit $C: y^2 = (x^2 + 2x)(x^2 + x + 1)(x^2 + 1)$ un courbe hyperelliptique sur $\mathbb{F}_{7}$. Calculons
+	l'équation de $C'$.
+	On a: $G_1(x) = x^2 + 2x$, $G_2(x) = x^2 + x + 1$ et $G_3(x) = x^2 + 1$, ensuite on a aussi 
+	\[\Delta = \det
+		\begin{pmatrix}
+			0 & 2 & 1 \\
+			1 & 1 & 1 \\
+			1 & 0 & 1
+	\end{pmatrix}\]
+	
+	\[
+		\Delta = -1 \times (2 \times 1 - 0 \times 1) + 1 \times (2 \times 1 - 1 \times 1)
+	\]
+	\[
+		\Delta = -1 \times 2 + 1 \times 1\\
+	\]
+	\[
+		\Delta = -1 \cong 6[7]
+	\]
+	\[
+		donc \quad \Delta \neq 0
+	\]
+	On calcule $\Delta^{-1}$, on a $1 = 6 \times 6 - 7 \times 5$, alors $\Delta^{-1} = 6$. 
+	Calculons maintenant les $H_i(x) = G_j'(x)G_k(x) - G_j(x)G_k'(x)$ \\
+	\begin{itemize}
+		\item $i = 1$, $j = 2$ et $k = 3$\\
+			$H_1(x) = G'_2(x)G_3(x) - G_2(x)G'3(x)$\\
+			$H_1(x) = (x^2 + x + 1)'(x^2 + 1) - (x^2 + x + 1)(x^2 + 1)'$\\
+			$H_1(x) = (2x + 1)(x^2 + 1) - (x^2 + x + 1)(2x)$\\
+			$H_1(x) = (2x^3 + x^2 + 2x + 1) - (2x^3 + 2x^2 + 2x)$\\
+			$H_1(x) = -x^2 + 1 = 6 x^2 + 1$\\
+		\item $i = 2$, $j = 3$ et $k = 1$\\
+			$H_2(x) = G'_3(x)G_1(x) - G_3(x)G'1(x)$\\
+			$H_2(x) = (x^2 + 1)'(x^2 + 2x) - (x^2 + 1)(x^2 + 2x)'$\\
+			$H_2(x) = (2x)(x^2 + 2x) - (x^2 + 1)(2x + 2)$ \\
+			$H_2(x) = (2x^3 + 4x^2) - (2x^3 + 2x^2 + 2x + 2)$ \\
+			$H_2(x) = 2x^2 - 2x - 2 = 2x^2 + 5x + 5$\\
+		\item $i = 3$, $j = 1$ et $k = 2$\\
+			$H_3(x) = G'_1(x)G_2(x) - G_1(x)G'_2(x)$ \\
+			$H_3(x) = (x^2 + 2x)'(x^2 + x + 1) - (x^2 + 2x)(x^2 + x + 1)'$ \\
+			$H_3(x) = (2x + 2)(x^2 + x + 1) - (x^2 + 2x)(2x + 1)$ \\
+			$H_3(x) = (2x^3 + 2x^2 + 2x + 2x^2 + 2x + 2) - (2x^3 + x^2 + 4x^2 + 2x)$ \\
+			$H_3(x) = (2x^3 + 4x^2 + 4x + 2) - (2x^3 + 5x^2 + 2x)$ \\
+			$H_3(x) = -x^2 + 2x + 2 = 6x^2 + 2x + 2$
+			
+	\end{itemize}
+	On trouve 
+	\[
+		H(x) = H_1(x)H_2(x)H_3(x), \quad 
+		H(x) =  (6 x^2 + 1)(2x^2 + 5x + 5)(6x^2 + 2x + 2)
+	\]
+	et donc on a $C': y^2 = H(x)$
+	\subsection*{Code Sage pour le calcule de la décomposition via les formules de Richelot }
+	On propose ce code sage qui permet pour une décomposition d'un polynôme de degré 6 en produit de polynômes de degrés 2. Cette fonction prend les trois polynômes $G_1$, $G_2$ et $G_3$ sous forme $G_j(x) = g_{j2}x^2 + g_{j1}x + g_{j0}$. On récupère pour chaque $G_i$ ses coefficients sous forme de listes. Puis on forme la matrice $(g_{i,j})$ qui va nous permettre de calculer $\Delta$ le déterminant de cette matrice. Ensuite si $\Delta$ est non nul on calcule les valeurs des $H_i(x)$ tel que $H_i(x) = G_j'(x)G_k(x) - G_j(x)G_k'(x)$ et enfin on retourne le produit des $H_i(x)$ multiplié par l'inverse de $\Delta$. 
+	\begin{sageblock}
+		def decomposition_polynomial(G1,G2,G3):
+				G1_list = G1.list()
+				G2_list = G2.list()
+				G3_list = G3.list()
+				Matrice = Matrix([G1_list,G2_list,G3_list])
+				Delta = det(Matrice)
+				if Delta != 0:
+						H1 = G2.derivative(x)*G3 - G2*G3.derivative(x)
+						H2 = G3.derivative(x)*G1 - G3*G1.derivative(x)
+						H3 = G1.derivative(x)*G2 - G1*G2.derivative(x)
+						return Delta^-1 * R(H1) * R(H2) * R(H3)
+				else: return "Delta est nul"
+	\end{sageblock}
+	\newpage
+	\section{Expérimentations et Invariants}
+	Pour cette partie notre objectif est de prouver algorithmiquement que le théorème fondamental affirmant que le nombre de points sur la jacobienne est invariant par isogénie sur un corps fini. Pour cela on propose de faire un petit rappel sur le comptage de point et le théorème principale de John Tate.
+	\subsection{Comptage de points sur la jacobienne}
+	Soient $C$ une courbe hyperelliptique sur un corps fini $\mathbb{F}_p$ de la forme $y^2 = f(x)$ o\`u $f$ est de degré 5 ou 6 et $J$ sa jacobienne.\\
+	On définit l'endomorphisme de Frobenius par $ \pi: J \to J$, $(x,y) \mapsto (x^p,y^p)$ dont le polynôme caractéristique est de la forme: \[
+	\chi(T) = T^4 -s_1 T^3 + s_2 T^2 -ps_1T + p^2 \quad \in \mathbb{Z}[T], \]
+	o\`u $s_1$ et $s_2$ sont des entiers qui satisfont: \[
+	|s_1| \leq 4 \sqrt{p} \quad et \quad |s_2| \leq 6p\]. Alors le nombre de points rationnels est donn\`e par $\chi$: \[ \#J(\mathbb{F}_p) = \chi(1) = 1 -s_1 + s_2 -ps_1 + p^2.\]
+	
+	Maintenant ce qui reste est de déterminer la valeur de $s_1$ et $s_2$ pour obtenir le cardinal de la jacobienne. Gaudry et Schost proposent une amélioration de l'algorithme de Schoof initialement développé pour les courbes elliptiques   mais cette fois en genre 2. Ils expliquent au paragraphe 3 un algorithme pour déterminer le couple ($s_1$,$s_2$) et donc obtenir le nombre de points de la jacobienne (voir le papier de Gaudry et Schost pour plus de détails).
+	\subsection{Théorème de John Tate}
+	Soient $A$ et $B$ deux variétés abéliennes sur un corps fini $\mathbb{K}$ et soient $f_A = \prod P^{a(P)}$ et $f_B = \prod P^{b(P)}$ leurs polynômes caractéristiques de leurs endomorphisme de Frobenius relatif \`a $\mathbb{K}$. Alors:
+	\begin{enumerate}
+		\item[(a)] On a $rang(Hom_{\mathbb{K}}(A,B))= r(f_A,f_B)$ avec $r(f_A,f_B) = \sum a(P)b(P)deg P$ 
+		\item[(b)] Ces propositions suivantes sont équivalentes:
+			\begin{itemize}
+				\item [(b1)] $B$ est $\mathbb{K}$-isogéne \`a une sous-variété abélienne de $A$ sur $\mathbb{K}$
+				\item[(b2)] $V_l(B)$ est G-isomorphe \`a un sous espace de $V_l(A)$ pour certains l.
+				\item[(b3)] $f_B$ divise $f_A$ .
+			\end{itemize}
+		\item[(c)] Ces propositions sont équivalentes:
+			\begin{itemize}
+				\item [(c1)] $A$ et $B$ sont $\mathbb{K}$-isogénes.
+				\item[(c2)] $f_A = f_B$
+				\item[(c3)] $A$ et $B$ ont les mêmes fonctions Zêta 
+				\item[(c4)] $A$ et $B$ ont le même nombre de points dans $\mathbb{K'}$ pour tout extension $\mathbb{K'}$ de $\mathbb{K}$    
+			\end{itemize} 
+	\end{enumerate}
+	Ce qui nous intéresse le plus par rapport \`a notre étude de l'invariance par isogénie est le point $(c)$ qui montre que si on a un isogénie entre deux jacobiennes $J$ et $J'$ alors leurs elles ont le même nombre de points car $(c1) $ est \textbf{équivalente} $(c4)$. Pour plus de détails consulter le document de John Tate en bibliographie.
+	\subsection{Implémentation en SageMath}
+	Pour prouver algorithmiquement l'invariance du nombre de point de la jacobienne par isogénie nous allons proposer un code SageMath qui utilise l'algorithme de Richelot déjà proposé en 4.4 pour le calcul des polynômes dérivés $H_1$,$H_2$ et $H_3$ et renvois l'équation de la nouvelle courbe $C'$ \`a partir de la courbe $C$ prenant en entré $G_1$,$G_2$ et $G_3$ ensuite nous allons montrer que $C$ et $C'$ ne se sont pas isomorphe via leurs invariant d'Igusa. Et enfin montrer que leurs jacobiennes ont même nombre de points. \\ \\
+	On procède en définissant un corps $\mathbb{F}_p$ avec des petits valeurs de p. Tout d'abord on définit le corps $\mathbb{F}_p$ puis l'anneau des polynômes \`a valeurs dans $\mathbb{F}_p$, on définit une fonction \textbf{\textit{ligne}} pour compléter et bien définir les lignes de la matrice dont chaque ligne est définie par un polynôme $G_i$. On définit aussi une fonction \textit{\textbf{polynômes}} pour générer au hasard le trio $G_1$,$G_2$ et $G_3$ qui forment la la courbe de $C$. Ensuite on utilise l'algorithme proposé (\textbf{\textit{decomposition\_polynomial}}) pour déterminés les polynômes dérivés $H_1$,$H_2$ et $H_3$. On définit la courbe en SageMath par la fonction prédéfinit \textbf{HyperellipticCurve()} qui prend en entrée le polynôme $f = G_1*G_2*G_2$, on récupère la valeur de $h = decomposition\_polynomial(G_1,G_2,G_3)$ pour definir la courbe de $C'$. Enfin on fait les tests pour voir s'ils ont les mêmes invariants Igusa et les cardinaux de leurs jacobiennes en utilisant la fonction de SageMath \textbf{\textit{igusa\_clebsch\_invariants()}} qui donne le quadruplet d'invariant d'Igusa $(I_2,I_4,I_6,I_8)$ (voir le document en bibliographie pour plus de détails) et la fonction Zêta (\textbf{\textit{zeta\_function().numerator()(1)}}) évalué en 1 pour le cardinal de la jacobienne.  
+	\begin{sageblock}
+	F = GF(97)
+	x = polygen(F)
+	R.<x> = PolynomialRing(F)
+	def ligne(G):
+			c = G
+			while len(c) < 3:
+			c.append(F(0))
+			return [c[0], c[1], c[2]]
+	def polynomes():
+			k = True
+			while k == True:
+					a0,a1,a2 = F.random_element(),F.random_element(),F.random_element()
+					b0,b1,b2 = F.random_element(),F.random_element(),F.random_element()
+					c0,c1,c2 = F.random_element(),F.random_element(),F.random_element()
+					G1 = R([a0,a1,a2])
+					G2 = R([b0,b1,b2])
+					G3 = R([c0,c1,c2])
+					if gcd(G1,G2) == 1 and gcd(G1,G3) == 1 and gcd(G3,G2) ==  1:
+							k = False
+							return G1,G2,G3
+			return G1,G2,G3
+	def decomposition_polynomial(G1,G2,G3):
+			G1_list = G1.list()
+			G2_list = G2.list()
+			G3_list = G3.list()
+			Matrice = Matrix(F,[ligne(G1_list),ligne(G2_list),ligne(G3_list)])
+			Delta = Matrice.det()
+			if Delta != 0:
+					H1 = G2.derivative(x)*G3 - G2*G3.derivative(x)
+					H2 = G3.derivative(x)*G1 - G3*G1.derivative(x)
+					H3 = G1.derivative(x)*G2 - G1*G2.derivative(x)
+					return Delta^-1 * R(H1) * R(H2) * R(H3)
+			else: return "Delta est nul"
+		
+	G1,G2,G3 = polynomes()
+	h = decomposition_polynomial(G1,G2,G3)
+	f = G1*G2*G3
+	C = HyperellipticCurve(f)
+	Cprime = HyperellipticCurve(h)
+	print(C)
+	print(Cprime)
+	IC  = C.igusa_clebsch_invariants()
+	cardC  = C.zeta_function().numerator()(1)
+	ICprime = Cprime.igusa_clebsch_invariants()        
+	cardCprime  = Cprime.zeta_function().numerator()(1)
+	print("Invariant Igusa de C: ", IC," Cardinal Jacobienne de C: ", 
+	cardC)
+	print("Invariant Igusa de Cprime: ", ICprime," Cardinal Jacobienne 
+	de Cprime: ", cardCprime) 
+	
+	# Resultats:
+	# Hyperelliptic Curve over Finite Field of size 7 defined by 
+	# y^2 = 3*x^6 + 2*x^5 + x^4 + 2*x^3 + 2*x^2 + 3*x + 6
+	# Hyperelliptic Curve over Finite Field of size 7 defined by 
+	# y^2 = 5*x^6 + 2*x^5 + 6*x^4 + 5*x^3 + 4*x^2 + 6
+	# Invariant Igusa de C:  (0, 2, 1, 2)  Cardinal Jacobienne de
+	# C:  20
+	# Invariant Igusa de Cprime:  (0, 4, 1, 4)  Cardinal Jacobienne
+	# de Cprime:  20
+	
+	\end{sageblock}
+	Vérification sur d'autres valeurs premiers p.
+	\begin{sageblock}
+	for p in [29,43,97]:
+			F = GF(p)
+			x = polygen(F)
+			R.<x> = PolynomialRing(F)
+			G1,G2,G3 = polynomes()
+			h = decomposition_polynomial(G1,G2,G3)
+			f = G1*G2*G3
+			C = HyperellipticCurve(f)
+			Cprime = HyperellipticCurve(h)
+			print(C)
+			print(Cprime)
+			IC  = C.igusa_clebsch_invariants()
+			cardC  = C.zeta_function().numerator()(1)
+			ICprime = Cprime.igusa_clebsch_invariants()              
+			cardCprime  = Cprime.zeta_function().numerator()(1)
+			print("Invariant Igusa de C: ", IC," Cardinal Jacobienne de C: ",
+			cardC)
+			print("Invariant Igusa de Cprime: ", ICprime," Cardinal 
+			Jacobienne de Cprime: ", cardCprime)
+			
+				
+				# Resultats:
+				#Hyperelliptic Curve over Finite Field of size 29 defined by 
+				#y^2 = 13*x^6 + 20*x^5 + 12*x^4 + 7*x^3 + 25*x^2 + 27*x + 13
+				#Hyperelliptic Curve over Finite Field of size 29 defined by 
+				#y^2 = 5*x^6 + 23*x^5 + 7*x^4 + 9*x^3 + 6*x^2 + 15*x + 11
+				#Invariant Igusa de C:  (7, 3, 14, 14)  Cardinal Jacobienne 
+				#de C:  912
+				#Invariant Igusa de Cprime:  (12, 27, 25, 13)  Cardinal 
+				#Jacobienne de Cprime:  912
+				#Hyperelliptic Curve over Finite Field of size 43 defined by 
+				#y^2 = 11*x^6 + 33*x^5 + 16*x^4 + 19*x^3 + 41*x^2 + 15*x + 23
+				#Hyperelliptic Curve over Finite Field of size 43 defined by 
+				#y^2 = 5*x^6 + 24*x^5 + 3*x^4 + 33*x^3 + 23*x^2 + 15*x + 2
+				#Invariant Igusa de C:  (18, 31, 26, 41)  Cardinal Jacobienne 
+				#de C:  1684
+				#Invariant Igusa de Cprime:  (25, 42, 30, 2)  Cardinal 
+				#Jacobienne de Cprime:  1684
+				#Hyperelliptic Curve over Finite Field of size 97 defined by 
+				#y^2 = 37*x^6 + 10*x^5 + 64*x^4 + 54*x^3 + 52*x^2 + 62*x + 29
+				#Hyperelliptic Curve over Finite Field of size 97 defined by 
+				#y^2 = 66*x^6 + 59*x^5 + 61*x^4 + 68*x^3 + 9*x^2 + 77*x + 40
+				#Invariant Igusa de C:  (93, 2, 79, 72)  Cardinal Jacobienne 
+				#de C:  8532
+				#Invariant Igusa de Cprime:  (50, 58, 74, 62)  Cardinal 
+				#Jacobienne de Cprime:  8532
+	\end{sageblock} 
+	\newpage	
+	\section{Conclusion}
+	Ce mémoire a été consacré \`a l'étude explicite des isogénies de Richelot dans les cadre des courbes de genre sur un corps fini. Nous avons étudié et implémenté des algorithmes pour représenter et manipuler les éléments de la jacobienne, les formules de Richelot et enfin montrer algorithmiquement que le nombre de point est invariant par isogénie. \\\\
+	Ce travail constitue une introduction concrète \`a un domaine actif \`a l'intersection de la géométrie algébrique et la cryptographie. 
+	\newpage
+	\section{Bibliographie Indicative}
+	
+	\begin{itemize}
+		\item B. Smith, \textit{Isogenies and the Discrete Logarithm Problem in Genus 2},
+		Thèse (chapitre sur les isogénies de Richelot).
+		
+		\item J.-B. Bost et J.-F. Mestre, \textit{Moyenne arithmético-géométrique et périodes
+			des courbes de genre 1 et 2}.
+		
+		\item Documentation de SageMath (Courbes Hyperelliptiques) et Magma Handbook.
+		\item D. Mumford, \textit{Conférences Tata II sur Thêta: https://link.springer.com/content/pdf/10.1007/978-0-8176-4578-6.pdf},
+		\item O. Diao, \textit{https://theses.hal.science/tel-00506025v1},
+		\item Gabriel Gallin \textit{https://theses.hal.science/tel-01989822v1},
+		\item Christophe Ritzenthaler \textit{https://theses.hal.science/tel-00459554v1}
+		\item Jiali Yan, \textit{https://jtnb.centre-mersenne.org/item/10.5802/jtnb.1259.pdf},
+		\item B. Smith, \textit{https://www.i2m.univ-amu.fr/perso/david.kohel/phd/thesis\_smith.pdf},
+		\item Efficient computation of ($2^n,2^n$)-isogenies, Sabrina Kunzweiler, \textit{https://doi.org/10.1007/s10623-024-01366-1},
+		\item P. Gaudry, Thèse \textit{https://pastel.hal.science/tel-00514848v1},
+		\item Valéry Mahé, Thèse \textit{https://theses.hal.science/tel-00124040v1},
+		\item Gerhard Frey and Tony Shaska \textit{http://arxiv.org/abs/1807.05270v2},
+		\item P. Gaudry et E. Schost,
+		\textit{https://cs.uwaterloo.ca/~eschost/publications/countg2.pdf},
+		\item Cours de Harvey \textit{https://swc-math.github.io/aws/2026/index.html}
+		\item J. Tate 
+		\textit{https://pazuki.perso.math.cnrs.fr/index\_fichiers/Tate66.pdf},
+		\item https://www.lmfdb.org/knowledge/show/g2c.igusa\_invariants
+	\end{itemize}
+	
+\end{document}
