@@ -1,5 +1,5 @@
 # Tests sur Fp p=97
-F = GF(97)
+	F = GF(97)
 	x = polygen(F)
 	R.<x> = PolynomialRing(F)
 
